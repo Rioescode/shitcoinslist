@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  scroll-behavior: smooth !important;
+}
+
+/* It makes the HTML progress bar filling smooth when value change. */
+progress::-webkit-progress-value {
+  transition: 0.6s width ease-out;
+}
+
+@layer base {
+  .btn-gradient {
+    @apply !bg-gradient !bg-[length:300%_300%] hover:saturate-[1.2] shadow duration-100 !border-0 !border-transparent !bg-transparent animate-shimmer disabled:!bg-none disabled:!bg-gray-500/30  !text-white;
+  }
+  .btn {
+    @apply !capitalize;
+  }
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.hot-deal-enter {
+    animation: slideIn 0.5s ease-out forwards;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Add these new animations */
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+    }
+}
+
+@keyframes pulse-glow-green {
+    0% {
+        box-shadow: 0 0 5px rgba(34, 197, 94, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(34, 197, 94, 0.5);
+    }
+}
+
+.hot-deal-card:hover {
+    animation: pulse-glow 2s infinite;
+}
+
+.top-gainer-card:hover {
+    animation: pulse-glow-green 2s infinite;
+}
+
+/* Add these animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+.notifications-enter {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.notifications-exit {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes flyRocket {
+    0% {
+        transform: translateY(0) rotate(-45deg) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-20px) rotate(-45deg) scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(0) rotate(-45deg) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes stars {
+    0% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+}
+
+.animate-rocket {
+    animation: flyRocket 1.5s infinite ease-in-out;
+    display: inline-block;
+    font-size: 2.5rem;
+}
+
+.loading-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stars {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+    animation: stars 2s infinite ease-out;
+    opacity: 0;
+}
+
+.stars:nth-child(2) {
+    animation-delay: 0.3s;
+    left: 40%;
+}
+
+.stars:nth-child(3) {
+    animation-delay: 0.6s;
+    left: 60%;
+}
