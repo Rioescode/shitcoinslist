@@ -1,106 +1,143 @@
 import { NextResponse } from 'next/server';
+import axios from 'axios';
 
-// Static data for build time and fallback
-const staticData = {
-    data: {
-        memecoins: [
-            {
-                id: 'dogecoin',
-                name: 'Dogecoin',
-                symbol: 'DOGE',
-                slug: 'dogecoin',
-                price: 0.20,
-                market_cap: 1000000000,
-                volume_24h: 100000000,
-                percent_change_24h: 5,
-                percent_change_7d: 10,
-                percent_change_30d: 15,
-                rank: 1,
-                logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/74.png'
-            },
-            {
-                id: 'shiba-inu',
-                name: 'Shiba Inu',
-                symbol: 'SHIB',
-                slug: 'shiba-inu',
-                price: 0.000008,
-                market_cap: 500000000,
-                volume_24h: 50000000,
-                percent_change_24h: 3,
-                percent_change_7d: 7,
-                percent_change_30d: 12,
-                rank: 2,
-                logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5994.png'
-            },
-            {
-                id: 'pepe',
-                name: 'Pepe',
-                symbol: 'PEPE',
-                slug: 'pepe',
-                price: 0.000001,
-                market_cap: 100000000,
-                volume_24h: 10000000,
-                percent_change_24h: 8,
-                percent_change_7d: 15,
-                percent_change_30d: 20,
-                rank: 3,
-                logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png'
-            }
-        ]
-    }
+// In-memory cache with multiple layers
+let cachedData = null;
+let lastFetchTime = null;
+
+const CACHE_DURATIONS = {
+    HIGH_CAP: 15 * 60 * 1000,    // 15 minutes for top 20 coins
+    MID_CAP: 30 * 60 * 1000,     // 30 minutes for mid-cap coins
+    LOW_CAP: 60 * 60 * 1000      // 1 hour for low-cap coins
+};
+
+const categorizeCoin = (coin) => {
+    const marketCap = coin.quote?.USD?.market_cap || 0;
+    const daysSinceListing = coin.date_added ? 
+        Math.floor((Date.now() - new Date(coin.date_added).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+    if (marketCap >= 1000000000) return 'top'; // > $1B
+    if (marketCap >= 100000000) return 'mid';  // > $100M
+    if (daysSinceListing <= 30) return 'new';  // Listed in last 30 days
+    if (coin.quote?.USD?.volume_24h > marketCap) return 'trending';
+    return 'other';
 };
 
 export async function GET() {
     try {
-        // During build time or if API fails, return static data
-        if (process.env.NODE_ENV === 'production') {
-            return NextResponse.json(staticData);
-        }
-
         const CMC_API_KEY = process.env.CMC_API_KEY;
         
-        const response = await fetch(
-            'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?cryptocurrency_type=meme',
-            {
-                headers: {
-                    'X-CMC_PRO_API_KEY': CMC_API_KEY,
-                    'Accept': 'application/json'
-                },
-                next: { revalidate: 300 }
-            }
-        );
-
-        if (!response.ok) {
-            console.error('CoinMarketCap API error:', response.statusText);
-            return NextResponse.json(staticData);
+        if (!CMC_API_KEY) {
+            return NextResponse.json(
+                { error: 'CoinMarketCap API key is not configured' }, 
+                { status: 500 }
+            );
         }
 
-        const data = await response.json();
+        const now = Date.now();
+
+        if (cachedData && lastFetchTime && (now - lastFetchTime) < CACHE_DURATIONS.HIGH_CAP) {
+            return NextResponse.json({
+                data: cachedData,
+                cached: true,
+                nextUpdate: new Date(lastFetchTime + CACHE_DURATIONS.HIGH_CAP)
+            });
+        }
+
+        console.log('Fetching data from CoinMarketCap...');
+
+        const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
+            headers: {
+                'X-CMC_PRO_API_KEY': CMC_API_KEY,
+                'Accept': 'application/json'
+            },
+            params: {
+                limit: 5000,
+                convert: 'USD'
+            },
+            timeout: 10000
+        });
+
+        if (!response.data?.data) {
+            throw new Error('Invalid response from CoinMarketCap API');
+        }
+
+        const memeKeywords = ['meme', 'dog', 'shib', 'inu', 'pepe', 'wojak', 'chad', 'elon', 'doge', 'floki', 'moon', 'safe', 'baby', 'rocket', 'mars'];
         
-        // Transform API data to match our format
-        const formattedData = {
-            data: {
-                memecoins: data.data.map(coin => ({
-                    id: coin.id,
-                    name: coin.name,
-                    symbol: coin.symbol,
-                    slug: coin.slug,
-                    price: coin.quote.USD.price,
-                    market_cap: coin.quote.USD.market_cap,
-                    volume_24h: coin.quote.USD.volume_24h,
-                    percent_change_24h: coin.quote.USD.percent_change_24h,
-                    percent_change_7d: coin.quote.USD.percent_change_7d,
-                    percent_change_30d: coin.quote.USD.percent_change_30d,
-                    rank: coin.cmc_rank,
-                    logo: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`
-                }))
-            }
+        const coins = response.data.data
+            .filter(coin => {
+                const nameAndSymbol = (coin.name + coin.symbol).toLowerCase();
+                return memeKeywords.some(keyword => nameAndSymbol.includes(keyword.toLowerCase())) ||
+                       coin.tags?.some(tag => tag.toLowerCase().includes('meme'));
+            })
+            .map(coin => ({
+                id: coin.id,
+                name: coin.name || 'Unknown',
+                symbol: coin.symbol || '',
+                slug: coin.slug || '',
+                price: coin.quote?.USD?.price || 0,
+                percent_change_24h: coin.quote?.USD?.percent_change_24h || 0,
+                percent_change_7d: coin.quote?.USD?.percent_change_7d || 0,
+                percent_change_30d: coin.quote?.USD?.percent_change_30d || 0,
+                market_cap: coin.quote?.USD?.market_cap || 0,
+                volume_24h: coin.quote?.USD?.volume_24h || 0,
+                rank: coin.cmc_rank || 999999,
+                logo: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`,
+                tags: coin.tags || [],
+                last_updated: coin.quote?.USD?.last_updated,
+                date_added: coin.date_added,
+                volume_change_24h: coin.quote?.USD?.volume_change_24h || 0,
+                max_supply: coin.max_supply || 0,
+                circulating_supply: coin.circulating_supply || 0,
+                total_supply: coin.total_supply || 0,
+                platform: coin.platform || null,
+                category: coin.category || 'Meme'
+            }))
+            .filter(coin => coin.price > 0);
+
+        const categorizedCoins = {
+            top: coins.filter(coin => coin.market_cap >= 1000000000),
+            mid: coins.filter(coin => coin.market_cap >= 100000000 && coin.market_cap < 1000000000),
+            new: coins.filter(coin => {
+                const daysSinceListing = coin.date_added ? 
+                    Math.floor((Date.now() - new Date(coin.date_added).getTime()) / (1000 * 60 * 60 * 24)) : 999;
+                return daysSinceListing <= 30;
+            }),
+            trending: coins.filter(coin => coin.volume_24h > coin.market_cap),
+            other: coins.filter(coin => {
+                const isTop = coin.market_cap >= 1000000000;
+                const isMid = coin.market_cap >= 100000000 && coin.market_cap < 1000000000;
+                const isNew = coin.date_added && 
+                    Math.floor((Date.now() - new Date(coin.date_added).getTime()) / (1000 * 60 * 60 * 24)) <= 30;
+                const isTrending = coin.volume_24h > coin.market_cap;
+                return !isTop && !isMid && !isNew && !isTrending;
+            })
         };
 
-        return NextResponse.json(formattedData);
+        cachedData = categorizedCoins;
+        lastFetchTime = now;
+
+        return NextResponse.json({
+            data: categorizedCoins,
+            cached: false,
+            nextUpdate: new Date(now + CACHE_DURATIONS.HIGH_CAP)
+        });
 
     } catch (error) {
-        console.error('Error fetching memecoins:', error);
-        return NextResponse.json(staticData);
+        console.error('Error fetching data:', error);
+
+        if (cachedData && lastFetchTime) {
+            return NextResponse.json({
+                data: cachedData,
+                cached: true,
+                error: 'Using cached data due to API error',
+                nextUpdate: new Date(lastFetchTime + CACHE_DURATIONS.HIGH_CAP)
+            });
+        }
+
+        return NextResponse.json(
+            { error: `Failed to fetch coin data: ${error.message}` },
+            { status: 500 }
+        );
     }
 } 
