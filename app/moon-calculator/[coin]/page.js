@@ -1,4 +1,5 @@
 import MoonCalculatorWrapper from '@/components/MoonCalculatorWrapper';
+import { getData } from '@/utils/getData';
 
 export async function generateMetadata({ params }) {
     const { coin } = params;
@@ -16,54 +17,19 @@ export async function generateMetadata({ params }) {
 }
 
 export async function generateStaticParams() {
-    try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/memecoins`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
+    const { data: categorizedCoins } = await getData();
+    const coins = categorizedCoins.memecoins;
 
-        if (!response.ok) {
-            console.error('Failed to fetch coins:', response.statusText);
-            return [];
-        }
-
-        const data = await response.json();
-        
-        if (!data || !data.data) {
-            console.error('Invalid data structure');
-            return [];
-        }
-
-        const coins = Object.values(data.data).flat();
-
-        return coins.map(coin => ({
-            coin: coin.symbol.toLowerCase()
-        }));
-
-    } catch (error) {
-        console.error('Error generating static params:', error);
-        return [];
-    }
+    return coins.map(coin => ({
+        coin: coin.symbol.toLowerCase()
+    }));
 }
 
 export default async function MoonCalculatorPage({ params }) {
     try {
         const { coin } = params;
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/memecoins`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data: ${response.statusText}`);
-        }
-
-        const { data: categorizedCoins } = await response.json();
-        const allCoins = Object.values(categorizedCoins).flat();
+        const { data: categorizedCoins } = await getData();
+        const allCoins = categorizedCoins.memecoins;
         
         const selectedCoin = allCoins.find(c => 
             c.symbol.toLowerCase() === coin.toLowerCase() ||
