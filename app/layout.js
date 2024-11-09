@@ -25,7 +25,7 @@ export const metadata = {
 		siteName: 'ShitcoinsList.com',
 		images: [
 			{
-				url: 'https://shitcoinslist.com/og-image.jpg',
+				url: '/og-image.jpg',
 				width: 1200,
 				height: 630,
 			}
@@ -55,11 +55,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
-			<head>
-				<link rel="stylesheet" href="https://shitcoinslist.com/style.css" />
-				<link rel="manifest" href="https://shitcoinslist.com/manifest.json" />
-				<link rel="icon" href="https://shitcoinslist.com/favicon.ico" />
-			</head>
 			<body className={font.className}>
 				<ErrorBoundary>
 					<ClientLayout>

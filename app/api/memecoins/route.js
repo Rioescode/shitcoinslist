@@ -11,68 +11,67 @@ const CACHE_DURATIONS = {
     LOW_CAP: 60 * 60 * 1000      // 1 hour for low-cap coins
 };
 
+const categorizeCoin = (coin) => {
+    const marketCap = coin.quote?.USD?.market_cap || 0;
+    const daysSinceListing = coin.date_added ? 
+        Math.floor((Date.now() - new Date(coin.date_added).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+    if (marketCap >= 1000000000) return 'top'; // > $1B
+    if (marketCap >= 100000000) return 'mid';  // > $100M
+    if (daysSinceListing <= 30) return 'new';  // Listed in last 30 days
+    if (coin.quote?.USD?.volume_24h > marketCap) return 'trending';
+    return 'other';
+};
+
 export async function GET(req) {
     try {
-        // Add request rate limiting
-        const requestIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
+        // Get host from request
+        const host = req.headers.get('host');
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const baseUrl = `${protocol}://${host}`;
+
+        console.log('API Request from:', baseUrl);
         
-        // Validate CMC API key early
         const CMC_API_KEY = process.env.CMC_API_KEY;
+        console.log('API Key available:', !!CMC_API_KEY);
+        
         if (!CMC_API_KEY) {
-            console.error('CMC API key missing');
             return NextResponse.json(
-                { error: 'Service temporarily unavailable' }, 
-                { status: 503 }
+                { error: 'CoinMarketCap API key is not configured' }, 
+                { status: 500 }
             );
         }
 
-        // Use cached data if available
         const now = Date.now();
+
         if (cachedData && lastFetchTime && (now - lastFetchTime) < CACHE_DURATIONS.HIGH_CAP) {
             return NextResponse.json({
                 data: cachedData,
                 cached: true,
                 nextUpdate: new Date(lastFetchTime + CACHE_DURATIONS.HIGH_CAP)
-            }, {
-                headers: {
-                    'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
-                    'X-Cache': 'HIT'
-                }
             });
         }
 
-        // Fetch new data with timeout and retries
-        const fetchWithRetry = async (retries = 3) => {
-            try {
-                const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
-                    headers: {
-                        'X-CMC_PRO_API_KEY': CMC_API_KEY,
-                        'Accept': 'application/json'
-                    },
-                    params: {
-                        limit: 5000,
-                        convert: 'USD'
-                    },
-                    timeout: 10000
-                });
-                return response;
-            } catch (error) {
-                if (retries > 0 && (error.code === 'ECONNABORTED' || error.response?.status >= 500)) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    return fetchWithRetry(retries - 1);
-                }
-                throw error;
-            }
-        };
+        console.log('Fetching data from CoinMarketCap...');
 
-        const response = await fetchWithRetry();
+        const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
+            headers: {
+                'X-CMC_PRO_API_KEY': CMC_API_KEY,
+                'Accept': 'application/json'
+            },
+            params: {
+                limit: 5000,
+                convert: 'USD'
+            },
+            timeout: 10000
+        });
 
-        // Validate response data
-        if (!response?.data?.data?.length) {
-            throw new Error('Invalid or empty response from CoinMarketCap API');
+        console.log('API Response:', response.status, response.statusText);
+
+        if (!response.data?.data) {
+            throw new Error('Invalid response from CoinMarketCap API');
         }
 
-        // Process and filter coins
         const memeKeywords = ['meme', 'dog', 'shib', 'inu', 'pepe', 'wojak', 'chad', 'elon', 'doge', 'floki', 'moon', 'safe', 'baby', 'rocket', 'mars'];
         
         const coins = response.data.data
@@ -106,7 +105,8 @@ export async function GET(req) {
             }))
             .filter(coin => coin.price > 0);
 
-        // Categorize coins
+        console.log('Coins found:', coins.length);
+
         const categorizedCoins = {
             top: coins.filter(coin => coin.market_cap >= 1000000000),
             mid: coins.filter(coin => coin.market_cap >= 100000000 && coin.market_cap < 1000000000),
@@ -126,7 +126,6 @@ export async function GET(req) {
             })
         };
 
-        // Update cache
         cachedData = categorizedCoins;
         lastFetchTime = now;
 
@@ -134,38 +133,13 @@ export async function GET(req) {
             data: categorizedCoins,
             cached: false,
             nextUpdate: new Date(now + CACHE_DURATIONS.HIGH_CAP)
-        }, {
-            headers: {
-                'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
-                'X-Cache': 'MISS'
-            }
         });
 
     } catch (error) {
-        console.error('API Error:', {
-            message: error.message,
-            stack: error.stack,
-            response: error.response?.data
-        });
-
-        // Use cached data if available on error
-        if (cachedData) {
-            return NextResponse.json({
-                data: cachedData,
-                cached: true,
-                error: 'Using cached data due to API error',
-                nextUpdate: new Date(lastFetchTime + CACHE_DURATIONS.HIGH_CAP)
-            }, {
-                headers: {
-                    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-                    'X-Cache': 'STALE'
-                }
-            });
-        }
-
+        console.error('Detailed API Error:', error);
         return NextResponse.json(
-            { error: 'Service temporarily unavailable' },
-            { status: 503 }
+            { error: `Failed to fetch coin data: ${error.message}` },
+            { status: 500 }
         );
     }
 } 

@@ -26,11 +26,14 @@ const nextConfig = {
             }
         ];
     },
+    env: {
+        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || ''
+    },
     poweredByHeader: false,
     compress: true,
     productionBrowserSourceMaps: true,
     reactStrictMode: true,
-    swcMinify: true,
+    swcMinify: true
 };
 
 module.exports = nextConfig;
