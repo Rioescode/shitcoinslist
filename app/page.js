@@ -107,7 +107,9 @@ export default function Home() {
             setLoading(true);
             setError(null);
 
-            const response = await fetch('/api/memecoins');
+            const response = await fetch('/api/memecoins', {
+                cache: 'no-store'
+            });
             const result = await response.json();
             
             if (result.error) {

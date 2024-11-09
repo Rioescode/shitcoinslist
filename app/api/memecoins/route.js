@@ -26,6 +26,7 @@ const categorizeCoin = (coin) => {
 export async function GET() {
     try {
         const CMC_API_KEY = process.env.CMC_API_KEY;
+        console.log('API Key available:', !!CMC_API_KEY);
         
         if (!CMC_API_KEY) {
             return NextResponse.json(
@@ -57,6 +58,8 @@ export async function GET() {
             },
             timeout: 10000
         });
+
+        console.log('API Response:', response.status, response.statusText);
 
         if (!response.data?.data) {
             throw new Error('Invalid response from CoinMarketCap API');
@@ -95,6 +98,8 @@ export async function GET() {
             }))
             .filter(coin => coin.price > 0);
 
+        console.log('Coins found:', coins.length);
+
         const categorizedCoins = {
             top: coins.filter(coin => coin.market_cap >= 1000000000),
             mid: coins.filter(coin => coin.market_cap >= 100000000 && coin.market_cap < 1000000000),
@@ -124,7 +129,11 @@ export async function GET() {
         });
 
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Detailed API Error:', {
+            message: error.message,
+            stack: error.stack,
+            response: error.response?.data
+        });
 
         if (cachedData && lastFetchTime) {
             return NextResponse.json({

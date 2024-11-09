@@ -3,11 +3,8 @@ import ToolsNavigation from '@/components/ToolsNavigation';
 
 async function fetchCoinData(slug) {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005'}/api/memecoins`, {
-            next: { revalidate: 60 },
-            headers: {
-                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30'
-            }
+        const response = await fetch(`/api/memecoins`, {
+            next: { revalidate: 60 }
         });
 
         if (!response.ok) {
@@ -420,7 +417,7 @@ export default async function CoinPage({ params }) {
                             '@type': 'FinancialProduct',
                             name: coin.name,
                             description: `${coin.name} (${coin.symbol}) live price tracking, market analysis, and trading insights. Current price: $${coin.price}, Market Cap: $${coin.market_cap}, 24h Change: ${coin.percent_change_24h}%`,
-                            url: `https://your-domain.com/coin/${coin.slug}`,
+                            url: `https://shitcoinslist.com/coin/${coin.slug}`,
                             image: coin.logo,
                             category: 'Cryptocurrency',
                             // Add price specification
@@ -506,19 +503,19 @@ export default async function CoinPage({ params }) {
                                     '@type': 'ListItem',
                                     position: 1,
                                     name: 'Home',
-                                    item: 'https://your-domain.com'
+                                    item: 'https://shitcoinslist.com'
                                 },
                                 {
                                     '@type': 'ListItem',
                                     position: 2,
                                     name: 'Meme Coins',
-                                    item: 'https://your-domain.com/coins'
+                                    item: 'https://shitcoinslist.com/coins'
                                 },
                                 {
                                     '@type': 'ListItem',
                                     position: 3,
                                     name: coin.name,
-                                    item: `https://your-domain.com/coin/${coin.slug}`
+                                    item: `https://shitcoinslist.com/coin/${coin.slug}`
                                 }
                             ]
                         })

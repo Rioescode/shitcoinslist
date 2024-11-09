@@ -21,29 +21,27 @@ const fallbackData = {
 
 export async function fetchMemeCoins() {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/memecoins`, {
+        const response = await fetch('/api/memecoins', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
             },
-            next: { revalidate: 300 } // Cache for 5 minutes
+            next: { revalidate: 300 }
         });
 
         if (!response.ok) {
-            console.error('Failed to fetch coins:', response.statusText);
-            return fallbackData;
+            throw new Error('Failed to fetch coins');
         }
 
-        const data = await response.json();
-        
-        if (!data || !data.data) {
-            console.error('Invalid data structure');
-            return fallbackData;
-        }
-
-        return data;
+        return await response.json();
     } catch (error) {
         console.error('Error fetching data:', error);
-        return fallbackData;
+        return {
+            data: {
+                memecoins: [],
+                trending: [],
+                new: []
+            }
+        };
     }
 } 

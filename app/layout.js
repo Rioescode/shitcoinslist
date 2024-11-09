@@ -3,6 +3,7 @@ import Navigation from "@/components/Navigation";
 import ClientLayout from "@/components/LayoutClient";
 import config from "@/config";
 import "./globals.css";
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const font = Inter({ subsets: ["latin"] });
 
@@ -71,7 +72,9 @@ export default function RootLayout({ children }) {
 			<body>
 				<Navigation />
 				<div className="pt-16">
-					<ClientLayout>{children}</ClientLayout>
+					<ErrorBoundary>
+						<ClientLayout>{children}</ClientLayout>
+					</ErrorBoundary>
 				</div>
 			</body>
 		</html>

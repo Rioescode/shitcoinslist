@@ -2,9 +2,8 @@
 const nextConfig = {
     images: {
         domains: [
-            's2.coinmarketcap.com',  // For CoinMarketCap logos
-            'assets.coingecko.com',  // Backup source for logos
-            'localhost'
+            's2.coinmarketcap.com',
+            'assets.coingecko.com'
         ],
         remotePatterns: [
             {
@@ -21,11 +20,17 @@ const nextConfig = {
                 headers: [
                     { key: 'Access-Control-Allow-Origin', value: '*' },
                     { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS' },
-                    { key: 'Access-Control-Allow-Headers', value: 'Content-Type' }
+                    { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+                    { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' }
                 ]
             }
         ];
-    }
+    },
+    poweredByHeader: false,
+    compress: true,
+    productionBrowserSourceMaps: false,
+    reactStrictMode: true,
+    swcMinify: true
 };
 
 module.exports = nextConfig;
