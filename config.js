@@ -11,6 +11,11 @@ const config = {
             memecoins: '/memecoins',
             lead: '/lead'
         }
+    },
+    colors: {
+        main: '#7c3aed', // Purple color from your theme
+        background: '#000000',
+        text: '#ffffff'
     }
 };
 

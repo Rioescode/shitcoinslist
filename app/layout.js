@@ -8,7 +8,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 const font = Inter({ subsets: ["latin"] });
 
 export const viewport = {
-	themeColor: config.colors.main,
+	themeColor: config.colors?.main || '#7c3aed',
 	width: "device-width",
 	initialScale: 1,
 };
@@ -54,28 +54,14 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
 	return (
-		<html
-			lang="en"
-			data-theme={config.colors.theme}
-			className={font.className}
-		>
-			<head>
-				<meta charSet="utf-8" />
-				<meta name="viewport" content="width=device-width, initial-scale=1" />
-				<meta name="theme-color" content="#000000" />
-				<link rel="canonical" href="https://your-domain.com" />
-				<link rel="icon" href="/favicon.ico" />
-				<link rel="apple-touch-icon" href="/logo192.png" />
-				<meta name="apple-mobile-web-app-capable" content="yes" />
-				<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-			</head>
-			<body>
-				<Navigation />
-				<div className="pt-16">
-					<ErrorBoundary>
-						<ClientLayout>{children}</ClientLayout>
-					</ErrorBoundary>
-				</div>
+		<html lang="en">
+			<body className={font.className}>
+				<ErrorBoundary>
+					<ClientLayout>
+						<Navigation />
+						{children}
+					</ClientLayout>
+				</ErrorBoundary>
 			</body>
 		</html>
 	);
