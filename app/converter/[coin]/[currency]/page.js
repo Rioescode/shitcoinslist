@@ -25,17 +25,26 @@ export async function generateMetadata({ params }) {
 }
 
 export async function generateStaticParams() {
-    const currencies = ['usd', 'eur', 'gbp']; // Add more currencies if needed
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/memecoins`);
-    const { data: categorizedCoins } = await response.json();
-    const coins = Object.values(categorizedCoins).flat();
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/memecoins`);
+        if (!response.ok) {
+            console.error('Failed to fetch coins:', response.statusText);
+            return [];
+        }
+        const data = await response.json();
+        const currencies = ['usd', 'eur', 'gbp'];
+        const coins = Object.values(data.data || {}).flat();
 
-    return coins.flatMap(coin => 
-        currencies.map(currency => ({
-            coin: coin.symbol.toLowerCase(),
-            currency: currency
-        }))
-    );
+        return coins.flatMap(coin => 
+            currencies.map(currency => ({
+                coin: coin.symbol.toLowerCase(),
+                currency: currency
+            }))
+        );
+    } catch (error) {
+        console.error('Error generating static params:', error);
+        return [];
+    }
 }
 
 export default async function CoinConverterPage({ params }) {

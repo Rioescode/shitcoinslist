@@ -22,7 +22,10 @@
     "crisp-sdk-web": "^1.0.21",
     "axios": "^1.6.2",
     "stripe": "^14.8.0",
-    "daisyui": "^4.4.19"
+    "daisyui": "^4.4.19",
+    "mailgun.js": "^9.3.0",
+    "eslint": "^8.55.0",
+    "eslint-config-next": "14.0.4"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.1",
