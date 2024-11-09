@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://shitcoinslist.com/sitemap.xml 
+# Sitemaps
+Sitemap: https://shitcoinslist.com/sitemap.xml
+Sitemap: https://shitcoinslist.com/sitemap/coins 
