@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
-import connectMongo from "@/libs/mongoose";
-import Lead from "@/models/Lead";
 
-// This route is used to store the leads that are generated from the landing page.
-// The API call is initiated by <ButtonLead /> component
-// Duplicate emails just return 200 OK
 export async function POST(req) {
-	await connectMongo();
-
 	const body = await req.json();
 
 	if (!body.email) {
@@ -18,19 +11,18 @@ export async function POST(req) {
 	}
 
 	try {
-		// Here you can add your own logic
-		// For instance, sending a welcome email (use the the sendEmail helper function from /libs/mailgun)
-		// For instance, saving the lead in the database (uncomment the code below)
-
-		// const lead = await Lead.findOne({ email: body.email });
-
-		// if (!lead) {
-		// 	await Lead.create({ email: body.email });
-		// }
-
-		return NextResponse.json({});
+		// Just log the email for now
+		console.log('New lead email:', body.email);
+		
+		return NextResponse.json({
+			success: true,
+			message: 'Email received'
+		});
 	} catch (e) {
 		console.error(e);
-		return NextResponse.json({ error: e.message }, { status: 500 });
+		return NextResponse.json(
+			{ error: 'Failed to process email' },
+			{ status: 500 }
+		);
 	}
 }
