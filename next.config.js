@@ -13,6 +13,23 @@ const nextConfig = {
             }
         ]
     },
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/home',
+                permanent: true,
+            },
+        ];
+    },
+    async rewrites() {
+        return [
+            {
+                source: '/',
+                destination: '/home',
+            },
+        ];
+    },
     async headers() {
         return [
             {
@@ -33,7 +50,9 @@ const nextConfig = {
     compress: true,
     productionBrowserSourceMaps: true,
     reactStrictMode: true,
-    swcMinify: true
+    swcMinify: true,
+    trailingSlash: false,
+    basePath: '',
 };
 
 module.exports = nextConfig;
