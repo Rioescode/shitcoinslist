@@ -1,5 +1,5 @@
-// Expanded fallback data for all tools
-export const fallbackData = {
+// Export the static data
+export const staticData = {
     data: {
         memecoins: [
             {
@@ -49,5 +49,32 @@ export const fallbackData = {
 };
 
 export async function getData() {
-    return fallbackData;
+    return staticData;
+}
+
+export async function fetchMemeCoins() {
+    try {
+        if (process.env.NODE_ENV === 'production') {
+            return staticData;
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/memecoins`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            next: { revalidate: 300 }
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch coins:', response.statusText);
+            return staticData;
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return staticData;
+    }
 } 
