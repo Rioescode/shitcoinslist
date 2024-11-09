@@ -3,7 +3,7 @@ import ToolsNavigation from '@/components/ToolsNavigation';
 
 async function fetchCoinData(slug) {
     try {
-        const response = await fetch(`/api/memecoins`, {
+        const response = await fetch('https://shitcoinslist.com/api/memecoins', {
             next: { revalidate: 60 }
         });
 
@@ -13,15 +13,8 @@ async function fetchCoinData(slug) {
         }
 
         const { data: categorizedCoins } = await response.json();
-        
         const allCoins = Object.values(categorizedCoins).flat();
-        const coin = allCoins.find(coin => coin.slug.toLowerCase() === slug.toLowerCase());
-        
-        console.log('Searching for slug:', slug);
-        console.log('Available coins:', allCoins.length);
-        console.log('Found coin:', coin);
-        
-        return coin;
+        return allCoins.find(coin => coin.slug.toLowerCase() === slug.toLowerCase());
     } catch (error) {
         console.error('Error fetching coin data:', error);
         return null;

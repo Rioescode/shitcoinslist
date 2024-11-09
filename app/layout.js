@@ -14,13 +14,10 @@ export const viewport = {
 };
 
 export const metadata = {
-	metadataBase: new URL('https://shitcoinslist.com'),
-	alternates: {
-		canonical: '/',
-	},
 	title: 'ShitcoinsList.com | Track & Analyze Meme Coins',
 	description: 'Track meme coins, calculate profits, analyze volume, and convert prices. The ultimate tool for meme coin traders and investors.',
 	keywords: 'shitcoins list, meme coins, dogecoin, shiba inu, pepe coin, crypto calculator, meme coin tracker',
+	metadataBase: new URL('https://shitcoinslist.com'),
 	openGraph: {
 		title: 'ShitcoinsList.com - Ultimate Meme Coin Tracker',
 		description: 'Track, analyze, and calculate meme coin profits. Real-time prices and tools.',
@@ -28,19 +25,41 @@ export const metadata = {
 		siteName: 'ShitcoinsList.com',
 		images: [
 			{
-				url: '/og-image.jpg',
+				url: 'https://shitcoinslist.com/og-image.jpg',
 				width: 1200,
 				height: 630,
 			}
 		],
 		locale: 'en_US',
 		type: 'website',
-	}
+	},
+	twitter: {
+		card: 'summary_large_image',
+		title: 'ShitcoinsList.com - Track & Analyze Meme Coins',
+		description: 'Real-time meme coin tracking and analysis tools',
+		images: ['/og-image.jpg'],
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			'max-video-preview': -1,
+			'max-image-preview': 'large',
+			'max-snippet': -1,
+		},
+	},
 };
 
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
+			<head>
+				<link rel="stylesheet" href="https://shitcoinslist.com/style.css" />
+				<link rel="manifest" href="https://shitcoinslist.com/manifest.json" />
+				<link rel="icon" href="https://shitcoinslist.com/favicon.ico" />
+			</head>
 			<body className={font.className}>
 				<ErrorBoundary>
 					<ClientLayout>

@@ -107,16 +107,21 @@ export default function Home() {
             setLoading(true);
             setError(null);
 
-            // Use relative URL
-            const response = await fetch('/api/memecoins', {
-                cache: 'no-store'
+            // Always use absolute URL in production
+            const response = await fetch('https://shitcoinslist.com/api/memecoins', {
+                cache: 'no-store',
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
             
             if (!response.ok) {
+                console.error('API Response Status:', response.status);
                 throw new Error('Failed to fetch data');
             }
 
             const result = await response.json();
+            console.log('API Response:', result); // Debug log
             
             if (result.error) {
                 throw new Error(result.error);
@@ -126,7 +131,7 @@ export default function Home() {
             setNextUpdate(result.nextUpdate);
             
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Fetch Error:', error);
             setError(error.message);
         } finally {
             setLoading(false);
