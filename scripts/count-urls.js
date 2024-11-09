@@ -1,31 +1,43 @@
-const fetch = require('node-fetch');
+const fs = require('fs');
+const path = require('path');
 
-async function countUrls() {
-    try {
-        const response = await fetch('http://localhost:3005/api/memecoins');
-        const { data: categorizedCoins } = await response.json();
-        const coins = Object.values(categorizedCoins).flat();
+function findUrls(dir) {
+    let urls = new Set();
 
-        // Count URLs
-        const staticPages = 3; // Home, converter main, volume hunter main
-        const coinPages = coins.length;
-        const converterPages = coins.length;
-        const calculatorPages = coins.length;
-        const volumePages = coins.length;
+    // Add static routes
+    urls.add('/');
+    urls.add('/converter');
+    urls.add('/volume-hunter');
+    urls.add('/moon-calculator');
 
-        const totalUrls = staticPages + coinPages + converterPages + calculatorPages + volumePages;
+    // Read memecoins data
+    const memecoins = [
+        { symbol: 'doge', slug: 'dogecoin' },
+        { symbol: 'shib', slug: 'shiba-inu' },
+        { symbol: 'pepe', slug: 'pepe' },
+        // Add more if needed
+    ];
 
-        // Print summary in a box
-        console.log('\n┌──────────────────────┐');
-        console.log('│    URL SUMMARY       │');
-        console.log('├──────────────────────┤');
-        console.log(`│ Total Coins: ${coins.length.toString().padEnd(7)} │`);
-        console.log(`│ Total URLs: ${totalUrls.toString().padEnd(8)} │`);
-        console.log('└──────────────────────┘\n');
+    // Add dynamic routes
+    memecoins.forEach(coin => {
+        urls.add(`/coin/${coin.slug}`);
+        urls.add(`/converter/${coin.symbol}/usd`);
+        urls.add(`/moon-calculator/${coin.symbol}`);
+        urls.add(`/volume-hunter/${coin.symbol}`);
+    });
 
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    console.log('\n=== URL Count Summary ===');
+    console.log('------------------------');
+    console.log(`Static Pages: ${4}`);
+    console.log(`Coins: ${memecoins.length}`);
+    console.log(`Dynamic Pages: ${memecoins.length * 4}`);
+    console.log(`Total URLs: ${urls.size}`);
+    console.log('------------------------\n');
+
+    console.log('All URLs:');
+    Array.from(urls).sort().forEach((url, index) => {
+        console.log(`${index + 1}. ${url}`);
+    });
 }
 
-countUrls(); 
+findUrls('.'); 
