@@ -16,7 +16,13 @@
     "react-hot-toast": "^2.4.1",
     "chart.js": "^4.4.1",
     "react-chartjs-2": "^5.2.0",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "react-spring": "^9.7.3",
+    "react-confetti": "^6.1.0",
+    "crisp-sdk-web": "^1.0.21",
+    "axios": "^1.6.2",
+    "stripe": "^14.8.0",
+    "daisyui": "^4.4.19"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.1",
