@@ -107,9 +107,15 @@ export default function Home() {
             setLoading(true);
             setError(null);
 
+            // Use relative URL
             const response = await fetch('/api/memecoins', {
                 cache: 'no-store'
             });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
             const result = await response.json();
             
             if (result.error) {
@@ -122,13 +128,6 @@ export default function Home() {
         } catch (error) {
             console.error('Error:', error);
             setError(error.message);
-            setCategorizedCoins({
-                top: [],
-                mid: [],
-                new: [],
-                trending: [],
-                other: []
-            });
         } finally {
             setLoading(false);
         }
