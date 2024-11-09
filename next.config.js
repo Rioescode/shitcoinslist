@@ -13,27 +13,56 @@ const nextConfig = {
             }
         ]
     },
+    async redirects() {
+        return [
+            {
+                source: '/home',
+                destination: '/',
+                permanent: true,
+            },
+            {
+                source: '/index',
+                destination: '/',
+                permanent: true,
+            }
+        ];
+    },
+    async rewrites() {
+        return {
+            beforeFiles: [
+                {
+                    source: '/',
+                    destination: '/home',
+                }
+            ]
+        };
+    },
     async headers() {
         return [
             {
                 source: '/api/:path*',
                 headers: [
                     { key: 'Access-Control-Allow-Origin', value: '*' },
-                    { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS' },
-                    { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
-                    { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' }
+                    { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,POST' },
+                    { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
                 ]
             }
         ];
     },
     env: {
-        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || ''
+        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
+        CMC_API_KEY: process.env.CMC_API_KEY || '',
+        NODE_ENV: process.env.NODE_ENV || 'development'
     },
     poweredByHeader: false,
     compress: true,
     productionBrowserSourceMaps: true,
     reactStrictMode: true,
-    swcMinify: true
+    swcMinify: true,
+    output: 'standalone',
+    experimental: {
+        serverActions: true,
+    }
 };
 
 module.exports = nextConfig;
