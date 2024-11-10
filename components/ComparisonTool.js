@@ -1,11 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function ComparisonTool({ coins, formatNumber, formatPrice, formatPercentage }) {
+export default function ComparisonTool({ coins, formatNumber, formatPrice, formatPercentage, preselectedCoin }) {
     const [selectedCoins, setSelectedCoins] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAdvanced, setShowAdvanced] = useState(false);
+
+    useEffect(() => {
+        if (preselectedCoin && !selectedCoins.find(c => c.id === preselectedCoin.id)) {
+            setSelectedCoins(prev => {
+                if (prev.length < 3) {
+                    return [...prev, preselectedCoin];
+                }
+                return prev;
+            });
+        }
+    }, [preselectedCoin]);
 
     const addCoin = (coin) => {
         if (selectedCoins.length < 3 && !selectedCoins.find(c => c.id === coin.id)) {
@@ -139,7 +150,7 @@ export default function ComparisonTool({ coins, formatNumber, formatPrice, forma
     };
 
     return (
-        <div className={`bg-gray-800/50 backdrop-blur-md rounded-xl p-6 transition-all duration-300 mt-20 mb-20 ${
+        <div className={`bg-gray-800/50 backdrop-blur-md rounded-xl p-6 transition-all duration-300 mb-20 ${
             selectedCoins.length > 0 ? 'w-full' : 'w-full'
         }`}>
             <div className="flex justify-between items-center mb-8">

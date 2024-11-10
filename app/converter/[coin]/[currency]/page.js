@@ -113,7 +113,7 @@ export default async function CoinConverterPage({ params }) {
 
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900 to-gray-900 text-white p-4 md:p-8">
-                <div className="max-w-7xl mx-auto space-y-8">
+                <div className="max-w-7xl mx-auto space-y-8 pt-16">
                     {/* SEO-optimized Header */}
                     <header className="text-center mb-12">
                         <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
