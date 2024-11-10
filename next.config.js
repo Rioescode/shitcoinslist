@@ -13,23 +13,6 @@ const nextConfig = {
             }
         ]
     },
-    async redirects() {
-        return [
-            {
-                source: '/',
-                destination: '/home',
-                permanent: true,
-            },
-        ];
-    },
-    async rewrites() {
-        return [
-            {
-                source: '/',
-                destination: '/home',
-            },
-        ];
-    },
     async headers() {
         return [
             {
@@ -43,16 +26,11 @@ const nextConfig = {
             }
         ];
     },
-    env: {
-        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || ''
-    },
     poweredByHeader: false,
     compress: true,
-    productionBrowserSourceMaps: true,
+    productionBrowserSourceMaps: false,
     reactStrictMode: true,
-    swcMinify: true,
-    trailingSlash: false,
-    basePath: '',
+    swcMinify: true
 };
 
 module.exports = nextConfig;

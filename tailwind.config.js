@@ -7,24 +7,11 @@ module.exports = {
   ],
   theme: {
     extend: {
-      animation: {
-        'gradient': 'gradient 8s linear infinite',
-      },
-      keyframes: {
-        gradient: {
-          to: { 'background-position': '200% center' },
-        }
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
     },
   },
-  plugins: [require("daisyui")],
-  daisyui: {
-    themes: ["dark", "black"], // Enable dark and black themes
-    darkTheme: "dark", // Set default dark theme
-    base: true, // applies background color and foreground color for root element by default
-    styled: true, // include daisyUI colors and design decisions for all components
-    utils: true, // adds responsive and modifier utility classes
-    logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
-    themeRoot: ":root", // The element that receives theme color CSS variables
-  },
+  plugins: [],  // Remove daisyUI from plugins if you're not using it
 }

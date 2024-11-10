@@ -23,15 +23,8 @@ const categorizeCoin = (coin) => {
     return 'other';
 };
 
-export async function GET(req) {
+export async function GET() {
     try {
-        // Get host from request
-        const host = req.headers.get('host');
-        const protocol = host.includes('localhost') ? 'http' : 'https';
-        const baseUrl = `${protocol}://${host}`;
-
-        console.log('API Request from:', baseUrl);
-        
         const CMC_API_KEY = process.env.CMC_API_KEY;
         console.log('API Key available:', !!CMC_API_KEY);
         
@@ -136,7 +129,21 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error('Detailed API Error:', error);
+        console.error('Detailed API Error:', {
+            message: error.message,
+            stack: error.stack,
+            response: error.response?.data
+        });
+
+        if (cachedData && lastFetchTime) {
+            return NextResponse.json({
+                data: cachedData,
+                cached: true,
+                error: 'Using cached data due to API error',
+                nextUpdate: new Date(lastFetchTime + CACHE_DURATIONS.HIGH_CAP)
+            });
+        }
+
         return NextResponse.json(
             { error: `Failed to fetch coin data: ${error.message}` },
             { status: 500 }

@@ -21,13 +21,12 @@ const fallbackData = {
 
 export async function fetchMemeCoins() {
     try {
-        // Use relative URL for API calls
         const response = await fetch('/api/memecoins', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
             },
-            cache: 'no-store'  // Disable caching to get fresh data
+            next: { revalidate: 300 }
         });
 
         if (!response.ok) {
@@ -39,11 +38,9 @@ export async function fetchMemeCoins() {
         console.error('Error fetching data:', error);
         return {
             data: {
-                top: [],
-                mid: [],
-                new: [],
+                memecoins: [],
                 trending: [],
-                other: []
+                new: []
             }
         };
     }
