@@ -36,6 +36,46 @@ ChartJS.register(
 const MEME_OF_DAY_KEY = 'memeOfTheDay';
 const MEME_OF_DAY_TIMESTAMP = 'memeOfDayTimestamp';
 
+// Add this helper function at the top of your file
+const formatPriceDisplay = (price) => {
+    if (price === null || price === undefined) return '$0.00';
+    
+    // For extremely small numbers (less than 0.00000001)
+    if (price < 0.00000001) {
+        const zeros = Math.floor(Math.abs(Math.log10(price))) - 1;
+        return `$0.${'0'.repeat(zeros)}${(price * Math.pow(10, zeros + 1)).toFixed(2)}`;
+    }
+    
+    // For very small numbers (less than 0.0001)
+    if (price < 0.0001) {
+        return `$${price.toFixed(8)}`;
+    }
+    
+    // For small numbers (less than 0.01)
+    if (price < 0.01) {
+        return `$${price.toFixed(6)}`;
+    }
+    
+    // For numbers between 0.01 and 1
+    if (price < 1) {
+        return `$${price.toFixed(4)}`;
+    }
+    
+    // For numbers between 1 and 1000
+    if (price < 1000) {
+        return `$${price.toFixed(2)}`;
+    }
+    
+    // For larger numbers
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        notation: 'compact',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(price);
+};
+
 export default function Home() {
     const [coins, setCoins] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -220,8 +260,7 @@ export default function Home() {
         .flat()
         .filter(coin => coin.percent_change_24h < -20)
         .filter((coin, index, self) => 
-            index === self.findIndex((c) => c.symbol === coin.symbol)
-        )
+            index === self.findIndex((c) => c.symbol === coin.symbol))
         .filter(coin => !dismissedDeals.has(coin.symbol))
         .sort((a, b) => a.percent_change_24h - b.percent_change_24h);
 
@@ -252,8 +291,7 @@ export default function Home() {
         .flat()
         .filter(coin => coin.percent_change_24h > 20)
         .filter((coin, index, self) => 
-            index === self.findIndex((c) => c.symbol === coin.symbol)
-        )
+            index === self.findIndex((c) => c.symbol === coin.symbol))
         .filter(coin => !dismissedGainers.has(coin.symbol))
         .sort((a, b) => b.percent_change_24h - a.percent_change_24h);
 
@@ -394,80 +432,66 @@ export default function Home() {
                     <p className="text-gray-300">Track the most popular meme coins in real-time</p>
                 </div>
 
+                {/* Update the header section */}
                 <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-md shadow-lg">
-                    <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-                        {/* Site name with hover effect */}
-                        <div className="text-xl font-bold group cursor-pointer">
-                            <span className="text-white inline-flex items-center gap-2 group-hover:scale-105 transition-transform">
-                                <span className="animate-bounce">💩</span> ShitcoinsList
-                            </span>
-                            <span className="text-purple-500 group-hover:text-purple-400 transition-colors">.com</span>
-                        </div>
-
-                        <div className="flex justify-end gap-2">
-                            {/* Tools Quick Access */}
-                            <div className="flex gap-2 mr-4">
-                                <button
-                                    onClick={() => document.getElementById('profit-calculator').scrollIntoView({ behavior: 'smooth' })}
-                                    className="bg-gray-800/90 hover:bg-gray-700/90 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm border border-gray-700 hover:scale-105 transition-all group"
-                                    title="Profit Calculator"
-                                >
-                                    <span className="group-hover:rotate-12 transition-transform inline-block">💰</span>
-                                    <span>Moon Calculator</span>
-                                </button>
-                                <button
-                                    onClick={() => document.getElementById('comparison-tool').scrollIntoView({ behavior: 'smooth' })}
-                                    className="bg-gray-800/90 hover:bg-gray-700/90 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm border border-gray-700 hover:scale-105 transition-all group"
-                                    title="Comparison Tool"
-                                >
-                                    <span className="group-hover:rotate-12 transition-transform inline-block">🔍</span>
-                                    <span>Meme Battle</span>
-                                </button>
-                                <button
-                                    onClick={() => document.getElementById('volume-analysis').scrollIntoView({ behavior: 'smooth' })}
-                                    className="bg-gray-800/90 hover:bg-gray-700/90 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm border border-gray-700 hover:scale-105 transition-all group"
-                                    title="Volume Analysis"
-                                >
-                                    <span className="group-hover:rotate-12 transition-transform inline-block">🔥</span>
-                                    <span>Volume Hunter</span>
-                                </button>
+                    <div className="max-w-7xl mx-auto px-4 py-2">
+                        <div className="flex items-center justify-between">
+                            {/* Site name */}
+                            <div className="text-xl font-bold group cursor-pointer">
+                                <span className="text-white inline-flex items-center gap-2 group-hover:scale-105 transition-transform">
+                                    <span className="animate-bounce">💩</span> ShitcoinsList
+                                </span>
+                                <span className="text-purple-500 group-hover:text-purple-400 transition-colors">.com</span>
                             </div>
 
-                            {/* Watchlist button with animation */}
-                            <button
-                                onClick={() => setIsWatchlistOpen(true)}
-                                className="bg-gray-800/90 hover:bg-gray-700/90 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm border border-gray-700 hover:scale-105 transition-all group"
-                            >
-                                <span className="group-hover:rotate-12 transition-transform inline-block">👀</span>
-                                <span>Watchlist</span>
-                                <span className="bg-purple-500/30 px-2 py-0.5 rounded-full text-sm group-hover:bg-purple-500/50 transition-colors">
-                                    {watchlist.length}
-                                </span>
-                            </button>
+                            {/* Tools Dropdown */}
+                            <div className="relative group">
+                                <button
+                                    className="bg-gray-800/90 hover:bg-gray-700/90 px-4 py-2 rounded-lg 
+                                        flex items-center gap-2 backdrop-blur-sm border border-gray-700 
+                                        hover:scale-105 transition-all"
+                                >
+                                    <span>🛠️ Tools</span>
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        className="h-4 w-4 transition-transform group-hover:rotate-180" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
 
-                            {/* Alert Controls with animations */}
-                            <button
-                                onClick={() => setShowNotifications(!showNotifications)}
-                                className="bg-gray-800/90 hover:bg-gray-700/90 px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm border border-gray-700 hover:scale-105 transition-all group"
-                            >
-                                <span className={`transition-transform inline-block ${showNotifications ? 'rotate-0' : 'rotate-12'}`}>
-                                    {showNotifications ? '🔇' : '🔔'}
-                                </span>
-                                <span>{showNotifications ? 'Hide' : 'Show'} Alerts</span>
-                            </button>
-                            <button
-                                onClick={() => setAutoHide(!autoHide)}
-                                className={`px-4 py-2 rounded-lg flex items-center gap-2 backdrop-blur-sm border transition-all hover:scale-105 group ${
-                                    autoHide 
-                                        ? 'bg-purple-500/20 hover:bg-purple-500/30 border-purple-500/50' 
-                                        : 'bg-gray-800/90 hover:bg-gray-700/90 border-gray-700'
-                                }`}
-                            >
-                                <span className="group-hover:rotate-12 transition-transform inline-block">
-                                    {autoHide ? '🕒' : '⭕'}
-                                </span>
-                                <span>Auto-hide {autoHide ? 'On' : 'Off'}</span>
-                            </button>
+                                {/* Dropdown Menu */}
+                                <div className="absolute right-0 mt-2 w-48 rounded-lg bg-gray-800/95 backdrop-blur-md shadow-xl border border-gray-700 
+                                    opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform 
+                                    group-hover:translate-y-0 translate-y-2">
+                                    <div className="py-2">
+                                        <button
+                                            onClick={() => document.getElementById('profit-calculator').scrollIntoView({ behavior: 'smooth' })}
+                                            className="w-full px-4 py-2 text-left hover:bg-gray-700/50 flex items-center gap-2"
+                                        >
+                                            <span className="text-lg">💰</span>
+                                            <span>Moon Calculator</span>
+                                        </button>
+                                        <button
+                                            onClick={() => document.getElementById('comparison-tool').scrollIntoView({ behavior: 'smooth' })}
+                                            className="w-full px-4 py-2 text-left hover:bg-gray-700/50 flex items-center gap-2"
+                                        >
+                                            <span className="text-lg">🔍</span>
+                                            <span>Meme Battle</span>
+                                        </button>
+                                        <button
+                                            onClick={() => document.getElementById('volume-analysis').scrollIntoView({ behavior: 'smooth' })}
+                                            className="w-full px-4 py-2 text-left hover:bg-gray-700/50 flex items-center gap-2"
+                                        >
+                                            <span className="text-lg">🔥</span>
+                                            <span>Volume Hunter</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -479,7 +503,13 @@ export default function Home() {
                 />
 
                 {/* Add Latest Coins Timeline */}
-                <LatestCoinsTimeline coins={Object.values(categorizedCoins).flat()} />
+                <LatestCoinsTimeline 
+                    coins={Object.values(categorizedCoins).flat()} 
+                    watchlist={watchlist}
+                    toggleWatchlist={toggleWatchlist}
+                    setSelectedAlertCoin={setSelectedAlertCoin}
+                    setIsAlertModalOpen={setIsAlertModalOpen}
+                />
 
                 {/* Meme of the Day */}
                 <div className="mb-8">
@@ -662,22 +692,25 @@ export default function Home() {
             </div>
             {showNotifications && (
                 <>
-                    <TopGainersNotification 
-                        gainers={visibleTopGainers}
-                        onDismiss={handleDismissTopGainer}
-                        formatPercentage={formatPercentage}
-                        formatPrice={formatPrice}
-                        formatNumber={formatNumber}
-                        remainingCount={topGainers.length - visibleTopGainers.length}
-                    />
-                    <HotDealsNotification 
-                        deals={visibleHotDeals}
-                        onDismiss={handleDismissHotDeal}
-                        formatPercentage={formatPercentage}
-                        formatPrice={formatPrice}
-                        formatNumber={formatNumber}
-                        remainingCount={hotDeals.length - visibleHotDeals.length}
-                    />
+                    {/* Hide on mobile screens, show on md (768px) and up */}
+                    <div className="hidden md:block">
+                        <TopGainersNotification 
+                            gainers={visibleTopGainers}
+                            onDismiss={handleDismissTopGainer}
+                            formatPercentage={formatPercentage}
+                            formatPrice={formatPrice}
+                            formatNumber={formatNumber}
+                            remainingCount={topGainers.length - visibleTopGainers.length}
+                        />
+                        <HotDealsNotification 
+                            deals={visibleHotDeals}
+                            onDismiss={handleDismissHotDeal}
+                            formatPercentage={formatPercentage}
+                            formatPrice={formatPrice}
+                            formatNumber={formatNumber}
+                            remainingCount={hotDeals.length - visibleHotDeals.length}
+                        />
+                    </div>
                 </>
             )}
 
@@ -700,30 +733,39 @@ export default function Home() {
                 formatPrice={formatPrice}
             />
 
-            {/* Keep this as the last main component */}
+            {/* Update the tool sections for mobile */}
             <div id="profit-calculator" className="mb-8">
-                <ProfitCalculator 
-                    coins={Object.values(categorizedCoins).flat()}
-                    formatNumber={formatNumber}
-                    formatPrice={formatPrice}
-                />
+                <div className="bg-gray-800/50 backdrop-blur-md rounded-xl p-4 md:p-6">
+                    <h2 className="text-2xl font-bold mb-4">💰 Moon Calculator</h2>
+                    <ProfitCalculator 
+                        coins={Object.values(categorizedCoins).flat()}
+                        formatNumber={formatNumber}
+                        formatPrice={formatPrice}
+                    />
+                </div>
             </div>
 
             <div id="comparison-tool" className="mb-8">
-                <ComparisonTool 
-                    coins={Object.values(categorizedCoins).flat()}
-                    formatNumber={formatNumber}
-                    formatPrice={formatPrice}
-                    formatPercentage={formatPercentage}
-                />
+                <div className="bg-gray-800/50 backdrop-blur-md rounded-xl p-4 md:p-6">
+                    <h2 className="text-2xl font-bold mb-4">⚔️ Meme Battle</h2>
+                    <ComparisonTool 
+                        coins={Object.values(categorizedCoins).flat()}
+                        formatNumber={formatNumber}
+                        formatPrice={formatPrice}
+                        formatPercentage={formatPercentage}
+                    />
+                </div>
             </div>
 
             <div id="volume-analysis" className="mb-8">
-                <VolumeAnalysis 
-                    coins={Object.values(categorizedCoins).flat()}
-                    formatNumber={formatNumber}
-                    formatPrice={formatPrice}
-                />
+                <div className="bg-gray-800/50 backdrop-blur-md rounded-xl p-4 md:p-6">
+                    <h2 className="text-2xl font-bold mb-4">🔥 Volume Hunter</h2>
+                    <VolumeAnalysis 
+                        coins={Object.values(categorizedCoins).flat()}
+                        formatNumber={formatNumber}
+                        formatPrice={formatPrice}
+                    />
+                </div>
             </div>
 
             {/* Add these new sections to track emerging trends and potential moonshots */}
@@ -775,15 +817,13 @@ const HotDealsNotification = ({
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 w-full max-w-[calc(100%-2rem)] md:max-w-md">
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm w-full md:max-w-md">
             {deals.map((deal, index) => {
                 const recoveryPotential = calculateRecoveryPotential(deal);
                 const buyPressure = calculateBuyPressure(deal);
                 
                 return (
-                    <div key={deal.symbol} 
-                        className="relative bg-gradient-to-r from-red-500/90 to-purple-600/90 backdrop-blur-md p-3 md:p-4 rounded-xl mb-3 
-                        shadow-lg transform transition-all duration-500 hover:scale-105 cursor-pointer group text-sm md:text-base">
+                    <div key={deal.symbol} className="relative bg-gradient-to-r from-red-500/90 to-purple-600/90 backdrop-blur-md p-4 rounded-xl mb-3 shadow-lg transform transition-all duration-500 hover:scale-105 cursor-pointer group">
                         {/* Make the header clickable */}
                         <a 
                             href={`https://coinmarketcap.com/currencies/${deal.slug || deal.id}/`}
@@ -1254,15 +1294,13 @@ const TopGainersNotification = ({
     };
 
     return (
-        <div className="fixed bottom-4 left-4 z-50 w-full max-w-[calc(100%-2rem)] md:max-w-md">
+        <div className="fixed bottom-4 left-4 z-50 max-w-sm w-full md:max-w-md">
             {gainers.map((gainer, index) => {
                 const momentumScore = calculateMomentumScore(gainer);
                 const breakoutPotential = calculateBreakoutPotential(gainer);
                 
                 return (
-                    <div key={gainer.symbol} 
-                        className="relative bg-gradient-to-r from-green-500/90 to-blue-600/90 backdrop-blur-md p-3 md:p-4 rounded-xl mb-3 
-                        shadow-lg transform transition-all duration-500 hover:scale-105 cursor-pointer group text-sm md:text-base">
+                    <div key={gainer.symbol} className="relative bg-gradient-to-r from-green-500/90 to-blue-600/90 backdrop-blur-md p-4 rounded-xl mb-3 shadow-lg transform transition-all duration-500 hover:scale-105 cursor-pointer group">
                         {/* Make the header clickable */}
                         <a 
                             href={`https://coinmarketcap.com/currencies/${gainer.slug || gainer.id}/`}
@@ -2041,64 +2079,153 @@ const LatestMemeCoins = ({ coins }) => {
 
     return (
         <div className="mb-8 bg-gray-800/50 backdrop-blur-md rounded-xl p-6 border border-gray-700/50">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                    🆕 Fresh Memes Just Dropped
-                    <span className="text-sm bg-purple-500/20 px-2 py-1 rounded-full animate-pulse">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                {/* Title and Hot Label - Stack on mobile */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left">
+                    <h2 className="text-2xl font-bold">🆕 Fresh Memes Just Dropped</h2>
+                    <span className="inline-block text-sm bg-purple-500/20 px-3 py-1 rounded-full animate-pulse self-center sm:self-auto">
                         Hot Off The Chain! 🔥
                     </span>
-                </h2>
-                <span className="text-sm bg-purple-500/20 px-3 py-1 rounded-full">
-                    Showing {latestCoins.length} of {latestCoins.length} coins
+                </div>
+                
+                {/* Coin Counter - Center on mobile */}
+                <span className="text-sm bg-purple-500/20 px-3 py-1 rounded-full text-center sm:text-left whitespace-nowrap">
+                    {latestCoins.length} of {latestCoins.length} coins
                 </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            
+            {/* Rest of the content */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 {latestCoins.map(coin => (
                     <a
                         key={coin.id}
                         href={`https://coinmarketcap.com/currencies/${coin.slug || coin.id}/`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-gray-700/30 p-4 rounded-lg hover:bg-gray-700/50 transition-all group relative"
+                        className="bg-gray-700/30 p-6 rounded-lg hover:bg-gray-700/50 transition-all group relative flex flex-col h-full"
                     >
-                        <div className="flex items-center gap-3 mb-2">
-                            <img 
-                                src={coin.logo} 
-                                alt={coin.name} 
-                                className="w-8 h-8 rounded-full group-hover:scale-110 transition-transform"
-                                onError={(e) => {
-                                    e.target.src = '/fallback-coin.png';
-                                    e.target.onerror = null;
-                                }}
+                        {/* Add hover tooltip */}
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 px-2 py-1 
+                            rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            Click to view on CoinMarketCap
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <img
+                                src={coin.logo}
+                                alt={coin.name}
+                                className="w-8 h-8 rounded-full group-hover:scale-110 transition-transform duration-300"
                             />
                             <div>
                                 <h3 className="font-bold group-hover:text-purple-400 transition-colors">{coin.name}</h3>
                                 <p className="text-sm text-gray-400">{coin.symbol}</p>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                                <p className="text-gray-400">Price</p>
-                                <p className="font-mono">${coin.price.toFixed(6)}</p>
-                            </div>
-                            <div>
-                                <p className="text-gray-400">24h</p>
-                                <p className={coin.percent_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}>
-                                    {coin.percent_change_24h >= 0 ? '↗' : '↘'} {Math.abs(coin.percent_change_24h).toFixed(2)}%
-                                </p>
-                            </div>
+                        <div className="flex-1 space-y-4">
+                            {/* Use conditional rendering based on price length */}
+                            {coin.price < 0.00000001 ? (
+                                // Stack layout for extremely small numbers
+                                <div className="grid grid-cols-1 gap-2">
+                                    <div className="space-y-1">
+                                        <p className="text-gray-400 text-sm">Price</p>
+                                        <p className="font-mono text-base group relative truncate">
+                                            {formatPriceDisplay(coin.price)}
+                                        </p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-gray-400 text-sm">24h</p>
+                                        <p className={`${coin.percent_change_24h >= 0 ? 'text-green-400' : 'text-red-400'} font-medium`}>
+                                            {coin.percent_change_24h >= 0 ? '↗' : '↘'} {Math.abs(coin.percent_change_24h).toFixed(2)}%
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                // Side by side layout for normal numbers
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <p className="text-gray-400 text-sm">Price</p>
+                                        <p className="font-mono text-base group relative truncate">
+                                            {formatPriceDisplay(coin.price)}
+                                        </p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-gray-400 text-sm">24h</p>
+                                        <p className={`${coin.percent_change_24h >= 0 ? 'text-green-400' : 'text-red-400'} font-medium`}>
+                                            {coin.percent_change_24h >= 0 ? '↗' : '↘'} {Math.abs(coin.percent_change_24h).toFixed(2)}%
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {/* Add listing date with relative time */}
-                        <div className="mt-2 text-xs text-gray-400">
-                            Listed: {new Date(coin.listing_date).toLocaleDateString()} ({
-                                Math.floor((new Date() - new Date(coin.listing_date)) / (1000 * 60 * 60 * 24))
-                            } days ago)
+                        <div className="mt-4 pt-4 border-t border-gray-600/30">
+                            <div className="text-xs text-gray-400">
+                                {(() => {
+                                    const timeDiff = new Date() - new Date(coin.date_added);
+                                    const hoursAgo = Math.floor(timeDiff / (1000 * 60 * 60));
+                                    const daysAgo = Math.floor(hoursAgo / 24);
+
+                                    if (hoursAgo < 24) {
+                                        // Show hours for coins less than 24 hours old
+                                        return (
+                                            <>
+                                                Listed: {new Date(coin.date_added).toLocaleString()} 
+                                                <span className="ml-1 text-purple-400">
+                                                    ({hoursAgo}h ago)
+                                                </span>
+                                            </>
+                                        );
+                                    } else {
+                                        // Show days for older coins
+                                        return (
+                                            <>
+                                                Listed: {new Date(coin.date_added).toLocaleDateString()} 
+                                                <span className="ml-1 text-purple-400">
+                                                    ({daysAgo}d ago)
+                                                </span>
+                                            </>
+                                        );
+                                    }
+                                })()}
+                            </div>
                         </div>
                         {/* Add "NEW" badge */}
                         <div className="absolute top-2 right-2">
                             <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs animate-pulse">
                                 NEW
                             </span>
+                        </div>
+
+                        {/* Add Quick Action Buttons */}
+                        <div className="absolute top-2 right-2 flex gap-2">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault(); // Prevent link navigation
+                                    e.stopPropagation();
+                                    toggleWatchlist(coin);
+                                }}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    watchlist.some(item => item.symbol === coin.symbol)
+                                        ? 'text-yellow-500 hover:text-yellow-400'
+                                        : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                                title={watchlist.some(item => item.symbol === coin.symbol) ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                            >
+                                {watchlist.some(item => item.symbol === coin.symbol) ? '★' : '☆'}
+                            </button>
+                            
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault(); // Prevent link navigation
+                                    e.stopPropagation();
+                                    setSelectedAlertCoin(coin);
+                                    setIsAlertModalOpen(true);
+                                }}
+                                className="p-2 text-gray-400 hover:text-gray-300 transition-colors"
+                                title="Set Price Alert"
+                            >
+                                🔔
+                            </button>
                         </div>
                     </a>
                 ))}
@@ -2107,17 +2234,40 @@ const LatestMemeCoins = ({ coins }) => {
     );
 };
 
-const LatestCoinsTimeline = ({ coins }) => {
-    const [newListings, setNewListings] = useState([]);
+const LatestCoinsTimeline = ({ coins, watchlist, toggleWatchlist, setSelectedAlertCoin, setIsAlertModalOpen }) => {
+    const [displayCount, setDisplayCount] = useState(8);
     const [loading, setLoading] = useState(true);
-    const [displayCount, setDisplayCount] = useState(12); // Initially show 12 coins
+    const [newListings, setNewListings] = useState([]);
+    const CACHE_KEY = 'newMemeCoinsCache';
+    const CACHE_DURATION = 15 * 60 * 1000;
 
     useEffect(() => {
         const fetchNewListings = async () => {
             try {
+                // Check cache first
+                const cachedData = localStorage.getItem(CACHE_KEY);
+                if (cachedData) {
+                    const { data, timestamp } = JSON.parse(cachedData);
+                    const isExpired = Date.now() - timestamp > CACHE_DURATION;
+                    
+                    if (!isExpired) {
+                        setNewListings(data);
+                        setLoading(false);
+                        return;
+                    }
+                }
+
+                // Fetch fresh data if cache is expired or doesn't exist
                 const response = await fetch('/api/newmemecoins');
                 const data = await response.json();
+                
                 if (data.status === 'success') {
+                    // Update cache
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        data: data.data,
+                        timestamp: Date.now()
+                    }));
+                    
                     setNewListings(data.data || []);
                 }
             } catch (error) {
@@ -2129,10 +2279,14 @@ const LatestCoinsTimeline = ({ coins }) => {
         };
 
         fetchNewListings();
+
+        // Optional: Set up periodic refresh
+        const refreshInterval = setInterval(fetchNewListings, CACHE_DURATION);
+        return () => clearInterval(refreshInterval);
     }, []);
 
     const showMore = () => {
-        setDisplayCount(prev => prev + 12); // Show 12 more coins when clicked
+        setDisplayCount(prev => prev + 8);
     };
 
     const visibleCoins = newListings.slice(0, displayCount);
@@ -2140,91 +2294,180 @@ const LatestCoinsTimeline = ({ coins }) => {
 
     return (
         <div className="mb-8 space-y-6">
-            <div className="bg-gray-800/50 backdrop-blur-md rounded-xl p-6 border border-gray-700/50">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold flex items-center gap-2">
-                        🆕 Fresh Memes Just Dropped
-                        <span className="text-sm bg-purple-500/20 px-2 py-1 rounded-full animate-pulse">
+            <div className="bg-gray-900/40 backdrop-blur-md rounded-xl p-6 
+                border border-gray-800/30 hover:border-purple-500/20 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left">
+                        <h2 className="text-2xl font-bold">🆕 Fresh Memes Just Dropped</h2>
+                        <span className="inline-block text-sm bg-purple-500/20 px-3 py-1 rounded-full animate-pulse self-center sm:self-auto">
                             Hot Off The Chain! 🔥
                         </span>
-                    </h2>
-                    <span className="text-sm bg-purple-500/20 px-3 py-1 rounded-full">
-                        Showing {visibleCoins.length} of {newListings.length} coins
+                    </div>
+                    
+                    <span className="text-sm bg-purple-500/20 px-3 py-1 rounded-full text-center sm:text-left whitespace-nowrap">
+                        {visibleCoins.length} of {newListings.length} coins
                     </span>
                 </div>
-                {loading ? (
-                    <div className="text-center py-8">
-                        <div className="animate-spin text-2xl">🔄</div>
-                        <p className="mt-2 text-gray-400">Fetching latest coins...</p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                            {visibleCoins.map(coin => (
-                                <a
-                                    key={coin.id}
-                                    href={`https://coinmarketcap.com/currencies/${coin.slug}/`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-gray-700/30 p-4 rounded-lg hover:bg-gray-700/50 transition-all group relative"
-                                >
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <img 
-                                            src={coin.logo} 
-                                            alt={coin.name} 
-                                            className="w-8 h-8 rounded-full group-hover:scale-110 transition-transform"
-                                            onError={(e) => {
-                                                e.target.src = '/fallback-coin.png';
-                                                e.target.onerror = null;
-                                            }}
-                                        />
-                                        <div>
-                                            <h3 className="font-bold group-hover:text-purple-400 transition-colors">{coin.name}</h3>
-                                            <p className="text-sm text-gray-400">{coin.symbol}</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {visibleCoins.map(coin => (
+                        <a
+                            key={coin.id}
+                            href={`https://coinmarketcap.com/currencies/${coin.slug || coin.id}/`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-gray-800/40 backdrop-blur-sm p-6 rounded-lg 
+                                hover:bg-purple-900/30 transition-all group relative flex flex-col h-full 
+                                border border-gray-700/30 hover:border-purple-500/30"
+                        >
+                            <div className="absolute -top-2 -right-2 z-10">
+                                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs animate-pulse shadow-lg">
+                                    NEW
+                                </span>
+                            </div>
+
+                            <div className="flex items-start gap-3 mb-4">
+                                <img 
+                                    src={coin.logo} 
+                                    alt={coin.name} 
+                                    className="w-10 h-10 rounded-full shrink-0 group-hover:scale-110 transition-transform"
+                                    onError={(e) => {
+                                        e.target.src = '/fallback-coin.png';
+                                        e.target.onerror = null;
+                                    }}
+                                />
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-bold text-lg group-hover:text-purple-400 transition-colors truncate">
+                                        {coin.name}
+                                    </h3>
+                                    <p className="text-sm text-gray-400 truncate">
+                                        {coin.symbol}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 space-y-4">
+                                {/* Use conditional rendering based on price length */}
+                                {coin.price < 0.00000001 ? (
+                                    // Stack layout for extremely small numbers
+                                    <div className="grid grid-cols-1 gap-2">
+                                        <div className="space-y-1">
+                                            <p className="text-gray-400 text-sm">Price</p>
+                                            <p className="font-mono text-base group relative truncate">
+                                                {formatPriceDisplay(coin.price)}
+                                            </p>
                                         </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                        <div>
-                                            <p className="text-gray-400">Price</p>
-                                            <p className="font-mono">${coin.price.toFixed(6)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-400">24h</p>
-                                            <p className={coin.percent_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                        <div className="space-y-1">
+                                            <p className="text-gray-400 text-sm">24h</p>
+                                            <p className={`${coin.percent_change_24h >= 0 ? 'text-green-400' : 'text-red-400'} font-medium`}>
                                                 {coin.percent_change_24h >= 0 ? '↗' : '↘'} {Math.abs(coin.percent_change_24h).toFixed(2)}%
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="mt-2 text-xs text-gray-400">
-                                        Listed: {new Date(coin.date_added).toLocaleDateString()} ({
-                                            Math.floor((new Date() - new Date(coin.date_added)) / (1000 * 60 * 60 * 24))
-                                        } days ago)
+                                ) : (
+                                    // Side by side layout for normal numbers
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <p className="text-gray-400 text-sm">Price</p>
+                                            <p className="font-mono text-base group relative truncate">
+                                                {formatPriceDisplay(coin.price)}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-gray-400 text-sm">24h</p>
+                                            <p className={`${coin.percent_change_24h >= 0 ? 'text-green-400' : 'text-red-400'} font-medium`}>
+                                                {coin.percent_change_24h >= 0 ? '↗' : '↘'} {Math.abs(coin.percent_change_24h).toFixed(2)}%
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="absolute top-2 right-2">
-                                        <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs animate-pulse">
-                                            NEW
-                                        </span>
-                                    </div>
-                                </a>
-                            ))}
-                        </div>
-                        {remainingCount > 0 && (
-                            <div className="text-center mt-8">
+                                )}
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-gray-600/30">
+                                <div className="text-xs text-gray-400">
+                                    {(() => {
+                                        const timeDiff = new Date() - new Date(coin.date_added);
+                                        const hoursAgo = Math.floor(timeDiff / (1000 * 60 * 60));
+                                        const daysAgo = Math.floor(hoursAgo / 24);
+
+                                        if (hoursAgo < 24) {
+                                            // Show hours for coins less than 24 hours old
+                                            return (
+                                                <>
+                                                    Listed: {new Date(coin.date_added).toLocaleString()} 
+                                                    <span className="ml-1 text-purple-400">
+                                                        ({hoursAgo}h ago)
+                                                    </span>
+                                                </>
+                                            );
+                                        } else {
+                                            // Show days for older coins
+                                            return (
+                                                <>
+                                                    Listed: {new Date(coin.date_added).toLocaleDateString()} 
+                                                    <span className="ml-1 text-purple-400">
+                                                        ({daysAgo}d ago)
+                                                    </span>
+                                                </>
+                                            );
+                                        }
+                                    })()}
+                                </div>
+                            </div>
+
+                            {/* Add Quick Action Buttons */}
+                            <div className="absolute top-2 right-2 flex gap-2">
                                 <button
-                                    onClick={showMore}
-                                    className="px-6 py-3 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-all duration-300 group"
+                                    onClick={(e) => {
+                                        e.preventDefault(); // Prevent link navigation
+                                        e.stopPropagation();
+                                        toggleWatchlist(coin);
+                                    }}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        watchlist.some(item => item.symbol === coin.symbol)
+                                            ? 'text-yellow-500 hover:text-yellow-400'
+                                            : 'text-gray-400 hover:text-gray-300'
+                                    }`}
+                                    title={watchlist.some(item => item.symbol === coin.symbol) ? 'Remove from Watchlist' : 'Add to Watchlist'}
                                 >
-                                    <span className="mr-2">Show {Math.min(12, remainingCount)} More</span>
-                                    <span className="text-sm text-purple-400 group-hover:text-purple-300">
-                                        ({remainingCount} remaining)
-                                    </span>
+                                    {watchlist.some(item => item.symbol === coin.symbol) ? '★' : '☆'}
+                                </button>
+                                
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault(); // Prevent link navigation
+                                        e.stopPropagation();
+                                        setSelectedAlertCoin(coin);
+                                        setIsAlertModalOpen(true);
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-gray-300 transition-colors"
+                                    title="Set Price Alert"
+                                >
+                                    🔔
                                 </button>
                             </div>
-                        )}
-                    </>
+                        </a>
+                    ))}
+                </div>
+
+                {remainingCount > 0 && (
+                    <div className="text-center mt-8">
+                        <button
+                            onClick={showMore}
+                            className="px-8 py-3 bg-purple-900/30 hover:bg-purple-800/40 rounded-lg 
+                                transition-all duration-300 group flex items-center gap-2 mx-auto
+                                border border-purple-500/20 hover:border-purple-500/30"
+                        >
+                            <span>Show More Coins</span>
+                            <span className="text-sm text-purple-400 group-hover:text-purple-300">
+                                ({remainingCount} remaining)
+                            </span>
+                        </button>
+                    </div>
                 )}
             </div>
         </div>
     );
 };
+
 

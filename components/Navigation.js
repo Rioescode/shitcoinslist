@@ -1,69 +1,125 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import Logo from './Logo';
+import { useState, useEffect, useRef } from 'react';
+
+function NavLink({ href, children, onClick }) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+  
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`w-full md:w-auto px-4 py-2 rounded-lg transition-colors ${
+        isActive 
+          ? 'bg-purple-100 text-purple-700' 
+          : 'hover:bg-gray-100'
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export default function Navigation() {
-    return (
-        <nav className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 z-50">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center justify-between h-16">
-                    {/* Logo/Home with better contrast */}
-                    <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                        <span className="text-2xl">💩</span>
-                        <span className="font-bold text-xl text-white">
-                            ShitcoinsList<span className="text-purple-400">.com</span>
-                        </span>
-                    </a>
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
-                    {/* Main Navigation with improved visibility */}
-                    <div className="hidden md:flex items-center gap-4">
-                        {/* Tools Dropdown */}
-                        <div className="relative group">
-                            <button className="flex items-center gap-1 px-4 py-2 rounded-lg bg-gray-800/50 hover:bg-purple-500/20 text-white transition-all">
-                                🛠️ Tools
-                                <span className="ml-1 opacity-60">▾</span>
-                            </button>
-                            <div className="absolute top-full left-0 w-48 py-2 bg-gray-800/95 backdrop-blur-md rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all border border-gray-700/50">
-                                <a href="/tools/moon-calculator" className="flex items-center gap-2 px-4 py-2 hover:bg-purple-500/20 text-white">
-                                    💰 Moon Calculator
-                                </a>
-                                <a href="/tools/meme-battle" className="flex items-center gap-2 px-4 py-2 hover:bg-purple-500/20 text-white">
-                                    ⚔️ Meme Battle
-                                </a>
-                                <a href="/tools/volume-hunter" className="flex items-center gap-2 px-4 py-2 hover:bg-purple-500/20 text-white">
-                                    🔥 Volume Hunter
-                                </a>
-                                <a href="/converter" className="flex items-center gap-2 px-4 py-2 hover:bg-purple-500/20 text-white">
-                                    💱 Converter
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    }
 
-                    {/* Mobile Menu Button with better contrast */}
-                    <button className="md:hidden p-2 rounded-lg bg-gray-800/50 hover:bg-purple-500/20 text-white transition-all">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-            {/* Mobile Menu with improved visibility */}
-            <div className="md:hidden bg-gray-800/95 backdrop-blur-md border-t border-gray-700/50">
-                <div className="px-2 pt-2 pb-3 space-y-1">
-                    <a href="/tools/moon-calculator" className="block px-4 py-2 rounded-lg hover:bg-purple-500/20 text-white transition-all">
-                        💰 Moon Calculator
-                    </a>
-                    <a href="/tools/meme-battle" className="block px-4 py-2 rounded-lg hover:bg-purple-500/20 text-white transition-all">
-                        ⚔️ Meme Battle
-                    </a>
-                    <a href="/tools/volume-hunter" className="block px-4 py-2 rounded-lg hover:bg-purple-500/20 text-white transition-all">
-                        🔥 Volume Hunter
-                    </a>
-                    <a href="/converter" className="block px-4 py-2 rounded-lg hover:bg-purple-500/20 text-white transition-all">
-                        💱 Converter
-                    </a>
-                </div>
-            </div>
-        </nav>
-    );
+  // Close menu when screen size changes to desktop
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 768) { // md breakpoint
+        setIsMenuOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const closeMenu = () => setIsMenuOpen(false);
+
+  return (
+    <nav className="w-full py-4 border-b relative" ref={menuRef}>
+      <div className="flex flex-row justify-between items-center">
+        <div className="flex items-center">
+          <Logo />
+        </div>
+        
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-4">
+          <NavLink href="/tools/meme-battle">Meme Battle</NavLink>
+          <NavLink href="/tools/volume-hunter">Volume Hunter</NavLink>
+          <NavLink href="/tools/usd-converter">USD Converter</NavLink>
+          <NavLink href="/tools/moon-calculator">Moon Calculator</NavLink>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+          aria-label="Toggle menu"
+        >
+          {isMenuOpen ? (
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth={1.5} 
+              stroke="currentColor" 
+              className="w-6 h-6"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M6 18L18 6M6 6l12 12" 
+              />
+            </svg>
+          ) : (
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth={1.5} 
+              stroke="currentColor" 
+              className="w-6 h-6"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" 
+              />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="absolute top-full left-0 right-0 bg-white border-b shadow-lg md:hidden z-50 mt-4 rounded-lg mx-4">
+          <div className="flex flex-col p-4 gap-2">
+            <NavLink href="/tools/meme-battle" onClick={closeMenu}>Meme Battle</NavLink>
+            <NavLink href="/tools/volume-hunter" onClick={closeMenu}>Volume Hunter</NavLink>
+            <NavLink href="/tools/usd-converter" onClick={closeMenu}>USD Converter</NavLink>
+            <NavLink href="/tools/moon-calculator" onClick={closeMenu}>Moon Calculator</NavLink>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
 } 

@@ -139,39 +139,24 @@ const tabs = [
 	},
 ];
 
-const Tabs = () => {
-	const [activeTab, setActiveTab] = useState(tabs[0].id);
-
+export default function Tabs({ tabs, activeTab, onChange }) {
 	return (
-		<section className="max-w-xl mx-auto space-y-4">
-			{/* TAB HEADER */}
-			<div
-				className="grid rounded-xl bg-base-200 p-1"
-				style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
-			>
+		<div className="w-full overflow-x-auto">
+			<div className="flex flex-nowrap md:flex-wrap gap-2 p-2">
 				{tabs.map((tab) => (
-					<a
+					<button
 						key={tab.id}
-						role="tab"
-						className={`flex cursor-pointer select-none items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium ${
+						onClick={() => onChange(tab.id)}
+						className={`whitespace-nowrap px-4 py-2 rounded-lg ${
 							activeTab === tab.id
-								? "animate-opacity bg-base-100 shadow"
-								: "text-base-content/75"
+								? 'bg-primary text-white'
+								: 'bg-gray-100 hover:bg-gray-200'
 						}`}
-						onClick={() => setActiveTab(tab.id)}
 					>
-						{tab.icon}
 						{tab.title}
-					</a>
+					</button>
 				))}
 			</div>
-
-			{/* TAB CONTENT */}
-			<div className="animate-opacity" key={activeTab}>
-				{tabs.find((tab) => tab.id === activeTab).content}
-			</div>
-		</section>
+		</div>
 	);
-};
-
-export default Tabs;
+}

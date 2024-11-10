@@ -2,6 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base styles */
+html {
+  @apply antialiased;
+}
+
+body {
+  @apply text-base m-0;
+  min-height: 100vh;
+  background: #111928;
+}
+
+/* Add this to create a seamless dark background */
+#__next, 
+main {
+  min-height: 100vh;
+  background: linear-gradient(180deg, 
+    rgba(17, 25, 40, 0.95) 0%,
+    rgba(39, 18, 77, 0.95) 50%,
+    rgba(17, 25, 40, 0.95) 100%
+  );
+}
+
+/* Adjust card backgrounds to be more transparent */
+.bg-gray-800\/40 {
+  background-color: rgba(17, 25, 40, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+.bg-gray-900\/40 {
+  background-color: rgba(17, 25, 40, 0.5);
+  backdrop-filter: blur(12px);
+}
+
+/* Responsive text sizes */
+h1 { @apply text-2xl md:text-4xl font-bold; }
+h2 { @apply text-xl md:text-3xl font-bold; }
+h3 { @apply text-lg md:text-2xl font-bold; }
+
+/* Responsive table styles */
+.table-responsive {
+  @apply w-full overflow-x-auto;
+}
+
+/* Form elements */
+input, select, textarea {
+  @apply w-full p-2 border rounded-lg;
+}
+
+/* Buttons */
+button {
+  @apply px-4 py-2 rounded-lg transition-colors;
+}
+
+/* Grid layouts */
+.grid-responsive {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
 /* Replace problematic gradient with a simpler one */
 .bg-gradient {
     @apply bg-gradient-to-b from-gray-900 via-purple-900 to-gray-900;
@@ -71,3 +129,36 @@
 }
 
 /* Add any other custom styles below */
+
+/* Add these styles to your globals.css */
+.price-tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.price-tooltip:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+    margin-bottom: 4px;
+}
+
+/* Add a subtle animation for price changes */
+.price-change {
+    animation: pricePulse 0.5s ease-in-out;
+}
+
+@keyframes pricePulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}

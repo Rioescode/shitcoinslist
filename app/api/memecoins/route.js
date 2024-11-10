@@ -23,6 +23,41 @@ const categorizeCoin = (coin) => {
     return 'other';
 };
 
+const axiosInstance = axios.create({
+    timeout: 30000,
+    headers: {
+        'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY,
+    }
+});
+
+// Add retry logic
+const fetchWithRetry = async (url, config, retries = 3, delay = 2000) => {
+    let lastError;
+    
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await axiosInstance.get(url, config);
+            if (response.data && response.status === 200) {
+                return response;
+            }
+            throw new Error(`Invalid response: ${response.status}`);
+        } catch (error) {
+            lastError = error;
+            console.error(`Attempt ${i + 1}/${retries} failed:`, {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data
+            });
+            
+            if (i === retries - 1) break;
+            
+            console.log(`Waiting ${delay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    throw lastError;
+};
+
 export async function GET() {
     try {
         const CMC_API_KEY = process.env.CMC_API_KEY;
@@ -47,32 +82,52 @@ export async function GET() {
 
         console.log('Fetching data from CoinMarketCap...');
 
-        const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
-            headers: {
-                'X-CMC_PRO_API_KEY': CMC_API_KEY,
-                'Accept': 'application/json'
-            },
-            params: {
-                limit: 5000,
-                convert: 'USD'
-            },
-            timeout: 10000
-        });
+        const response = await fetchWithRetry(
+            'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest',
+            {
+                params: {
+                    start: 1,
+                    limit: 500,
+                    convert: 'USD',
+                    sort: 'market_cap',
+                    sort_dir: 'desc'
+                }
+            }
+        );
 
-        console.log('API Response:', response.status, response.statusText);
+        console.log('Raw API Response status:', response.status);
+        console.log('Number of coins received:', response.data?.data?.length || 0);
 
         if (!response.data?.data) {
             throw new Error('Invalid response from CoinMarketCap API');
         }
 
-        const memeKeywords = ['meme', 'dog', 'shib', 'inu', 'pepe', 'wojak', 'chad', 'elon', 'doge', 'floki', 'moon', 'safe', 'baby', 'rocket', 'mars'];
-        
+        const memeKeywords = [
+            // Core meme coins
+            'doge', 'shib', 'pepe', 'floki', 'wojak', 'chad', 'kishu', 'meme',
+            // Animal memes
+            'inu', 'shiba', 'akita', 'corgi', 'hamster', 'cat', 'kitty',
+            // Popular meme references
+            'elon', 'moon', 'pepe', 'wojak', 'chad', 'degen',
+            // Common meme suffixes/prefixes
+            'baby', 'safe', 'rocket', 'cum', 'poo', 'shit'
+        ];
+
         const coins = response.data.data
             .filter(coin => {
                 const nameAndSymbol = (coin.name + coin.symbol).toLowerCase();
-                return memeKeywords.some(keyword => nameAndSymbol.includes(keyword.toLowerCase())) ||
-                       coin.tags?.some(tag => tag.toLowerCase().includes('meme'));
+                const tags = (coin.tags || []).map(tag => tag.toLowerCase());
+                
+                // Strict meme coin filtering
+                return (
+                    memeKeywords.some(keyword => nameAndSymbol.includes(keyword.toLowerCase())) || // Name contains meme keyword
+                    tags.includes('meme') || // Has meme tag
+                    tags.includes('memes') || // Has memes tag
+                    (coin.category || '').toLowerCase() === 'meme' // Is categorized as meme
+                );
             })
+            .sort((a, b) => (b.quote?.USD?.market_cap || 0) - (a.quote?.USD?.market_cap || 0))
+            .slice(0, 100) // Take top 100
             .map(coin => ({
                 id: coin.id,
                 name: coin.name || 'Unknown',
@@ -94,11 +149,11 @@ export async function GET() {
                 circulating_supply: coin.circulating_supply || 0,
                 total_supply: coin.total_supply || 0,
                 platform: coin.platform || null,
-                category: coin.category || 'Meme'
-            }))
-            .filter(coin => coin.price > 0);
+                category: 'Meme'
+            }));
 
-        console.log('Coins found:', coins.length);
+        console.log('Total coins from API:', response.data.data.length);
+        console.log('Filtered meme coins:', coins.length);
 
         const categorizedCoins = {
             top: coins.filter(coin => coin.market_cap >= 1000000000),
@@ -129,10 +184,11 @@ export async function GET() {
         });
 
     } catch (error) {
-        console.error('Detailed API Error:', {
+        console.error('CoinMarketCap API Error:', {
             message: error.message,
-            stack: error.stack,
-            response: error.response?.data
+            code: error.response?.status,
+            data: error.response?.data,
+            stack: error.stack
         });
 
         if (cachedData && lastFetchTime) {
@@ -145,8 +201,8 @@ export async function GET() {
         }
 
         return NextResponse.json(
-            { error: `Failed to fetch coin data: ${error.message}` },
-            { status: 500 }
+            { error: 'Failed to fetch cryptocurrency data' },
+            { status: error.response?.status || 500 }
         );
     }
 } 

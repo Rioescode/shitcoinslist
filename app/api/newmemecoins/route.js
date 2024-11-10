@@ -4,6 +4,7 @@ export async function GET() {
     try {
         const API_KEY = process.env.CMC_API_KEY;
         const url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest';
+        const CACHE_DURATION = 15 * 60; // 15 minutes in seconds
 
         // Create proper URL with query parameters
         const urlWithParams = new URL(url);
@@ -17,7 +18,9 @@ export async function GET() {
                 'X-CMC_PRO_API_KEY': API_KEY,
                 'Accept': 'application/json'
             },
-            next: { revalidate: 300 }
+            next: { 
+                revalidate: CACHE_DURATION // 15 minutes cache
+            }
         });
 
         if (!response.ok) {
