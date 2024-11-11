@@ -1,4 +1,4 @@
-import MoonCalculatorWrapper from '@/components/MoonCalculatorWrapper';
+import ProfitCalculator from '@/components/ProfitCalculator';
 
 export async function generateMetadata({ params }) {
     const { coin } = params;
@@ -106,7 +106,7 @@ export default async function CoinCalculatorPage({ params }) {
                             Current Price: ${safeSelectedCoin.price.toFixed(6)}
                         </p>
                     </header>
-                    <MoonCalculatorWrapper coin={safeSelectedCoin} />
+                    <ProfitCalculator coin={safeSelectedCoin} />
                 </div>
             </div>
         );
