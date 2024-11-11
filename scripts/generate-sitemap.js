@@ -35,10 +35,11 @@ async function generateSitemap() {
         // Generate coin-specific routes
         const coinRoutes = allCoins.flatMap(coin => [
             `/tools/usd-converter/${coin.slug}`,
+            `/tools/compare/${coin.symbol.toLowerCase()}`,
             `/converter/${coin.symbol.toLowerCase()}/usd`,
             `/converter/${coin.symbol.toLowerCase()}/eur`,
-            `/converter/${coin.symbol.toLowerCase()}/gbp`
-            
+            `/converter/${coin.symbol.toLowerCase()}/gbp`,
+            `/calculator/${coin.symbol.toLowerCase()}/profit`
         ]);
 
         // Currency pairs for each coin
